@@ -40,6 +40,12 @@ https://arstechnica.com/information-technology/2019/07/chrome-76-prevents-nyt-an
 
 ## Browser Documented Behavior (in progress)
 
+### Chrome
+
+https://www.blog.google/outreach-initiatives/google-news-initiative/protecting-private-browsing-chrome/
+
+### Firefox 
+
 https://wiki.mozilla.org/Private_Browsing
 
 - clears cookies on session close (last window close)

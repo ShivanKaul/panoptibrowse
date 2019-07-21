@@ -8,12 +8,25 @@ const notDetected = 'Private Browsing Mode NOT Detected!';
 
 /* Run all the tests. Returns a boolean Promise */
 function detectPrivateMode() {
-	return Promise.all([
-		requestFileSystem(), 
+	return Promise.all(
+		[
+		forChrome(), 
 		forSafari(), 
 		forFirefox()
 		])
 	.then(results => checkIfAnyTestsWorked(results));
+}
+
+function privateModeFound() {
+	return new Promise(resolve => resolve(true));
+}
+
+function privateModeNotFound() {
+return new Promise(resolve => resolve(false));
+}
+
+function forChrome() {
+	return requestFileSystem();
 }
 
 function requestFileSystem() {
@@ -30,9 +43,9 @@ function requestFileSystem() {
 					resolve(true);
 				});
 		});
-	} else {
-		return new Promise(resolve => resolve(false));
-	}
+	} 
+	
+	return privateModeNotFound();
 }
 
 function isSafari() {
@@ -40,42 +53,44 @@ function isSafari() {
 }
 
 function forSafari() {
-	if (window.localStorage && isSafari()) {
-		let is_private;
-		// One-off check for weird sports 2.0 polyfill
-	    // This also impacts iOS Firefox and Chrome (newer versions), apparently
-	    // @see bglobe-js/containers/App.js:116
-	    if (window.safariIncognito) {
-	    	is_private = true;
-	    } else {
-	    	try {
-	    		window.openDatabase(null, null, null, null);
-	    	} catch (e) {
-	    		is_private = true;
-	    	}
-	    	try {
-	    		window.localStorage.setItem('test', 1);
-	    	} catch(e) {
-	    		is_private = true;
-	    	}
-	    } 
-
-	    if (typeof is_private === 'undefined') {
-	    	is_private = false;
-	    	window.localStorage.removeItem('test');
-	    }
-	    return new Promise(resolve => resolve(is_private));
-	} else return new Promise(resolve => resolve(false));
+	if (isSafari()) {
+		if (window.safariIncognito) {
+			return privateModeFound();
+		} 
+		return testLocalStorage();
+	}
+	return privateModeNotFound();
 }
 
-function isMozilla() {
+function testLocalStorage() {
+	if (window.localStorage) {
+		let is_private;
+		try {
+			window.openDatabase(null, null, null, null);
+		} catch (e) {
+			is_private = true;
+		}
+		try {
+			window.localStorage.setItem('test', 1);
+		} catch(e) {
+			is_private = true;
+		}
+		if (typeof is_private === 'undefined') {
+			is_private = false;
+			window.localStorage.removeItem('test');
+		}
+		return new Promise(resolve => resolve(is_private));
+	}
+	return privateModeNotFound();
+}
+
+function isFF() {
 	return /Firefox/.test(window.navigator.userAgent) 
 	|| 'MozAppearance' in document.documentElement.style;
 }
 
-
-function forFirefox() {
-	if (window.indexedDB && isMozilla()) {
+function testIndexedDB() {
+	if (window.indexedDB) {
 		return new Promise(resolve => {
 			const on = function() {
 				resolve(true);
@@ -89,9 +104,13 @@ function forFirefox() {
 			return;
 		});
 	}
-	else {
-		return new Promise(resolve => resolve(false));
+	return privateModeNotFound();
+}
+function forFirefox() {
+	if (isFF()) {
+		return testIndexedDB();
 	}
+	return privateModeNotFound();
 }
 
 function writeToDom(message) {
