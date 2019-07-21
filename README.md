@@ -27,6 +27,8 @@ https://arstechnica.com/information-technology/2019/07/chrome-76-prevents-nyt-an
 
 ## What Features Can A Private Browsing Mode Provide?
 
+From ['An Analysis of Private Browsing Modes in Modern Browsers', 2010](https://crypto.stanford.edu/~dabo/pubs/papers/privatebrowsing.pdf).
+
 - clears cookies and history
 - HTML5 local storage
 - bookmarks
